@@ -129,7 +129,7 @@ func statsprinter(ch chan int, nclients int) {
 			case <-time.After(1 * time.Second):
 				c2 = atomic.LoadUint64(&totPkts)
 				fmt.Print("pps: ",c2-c1," total drops: ",atomic.LoadUint64(&totDrops))
-				fmt.Printf("avg rtt: %.3f",1/float64(c2-c1)*1000*float64(nclients))
+				fmt.Printf(" avg rtt: %.3f",1/float64(c2-c1)*1000*float64(nclients))
 				fmt.Println("ms")
 		}
 		c1 = c2
