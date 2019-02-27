@@ -1,4 +1,4 @@
-This is a basic UDP network tester.
+This is a basic UDP network tester I wrote to learn some go.
 It ping-pongs UDP packets, where packet size, packet count
 and number of threads can be specified on the command line.
 
@@ -11,7 +11,7 @@ Run as a client:
 phantom 192.0.2.1:2222 (default test to server 192.0.2.1 port 2222)
 client flags:
  -n <number> number of threads (default 1)
- -c <number> packets per thread (default 10k)
+ -c <number> packets per thread (default 1k)
  -b <number> packet size (default 512 bytes)
 
 Another client example:
