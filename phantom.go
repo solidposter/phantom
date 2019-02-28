@@ -47,7 +47,7 @@ func main() {
 	}
 
 	if len(flag.Args()) == 0 {
-		fmt.Println("Specify server")
+		fmt.Println("Specify server:port")
 		return
 	}
 	fmt.Println("number of clients:", *clntPtr)
@@ -102,7 +102,7 @@ func udpclient(addr string, numpkts int, pktsize int) {
 		os.Exit(1)
 	}
 
-	for i := 0; i < numpkts; i++ {
+	for i := 0; (i < numpkts) || (numpkts < 1); i++ {
 		_, err = conn.Write(buffer)
 		if err != nil {
 			fmt.Println("write failed:",err)
