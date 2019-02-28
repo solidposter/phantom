@@ -102,7 +102,7 @@ func udpclient(addr string, numpkts int, pktsize int) {
 		os.Exit(1)
 	}
 
-	for i := 0; (i < numpkts) || (numpkts < 1); i++ {
+	for i := 0; i < numpkts; i++ {
 		_, err = conn.Write(buffer)
 		if err != nil {
 			fmt.Println("write failed:",err)
