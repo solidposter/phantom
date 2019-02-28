@@ -110,7 +110,7 @@ func udpclient(addr string, numpkts int, pktsize int) {
 			continue
 		}
 
-		conn.SetDeadline(time.Now().Add(1000*time.Millisecond))
+		conn.SetReadDeadline(time.Now().Add(1000*time.Millisecond))
 		_, err = conn.Read(buffer)
 		if err != nil {
 			fmt.Println("read failed:",err)
