@@ -51,6 +51,9 @@ func main() {
 		return
 	}
 	fmt.Println("number of clients:", *clntPtr)
+	if *pktsPtr < 1 {
+		*pktsPtr = int(^uint(0) >> 1)
+	}
 	fmt.Println("packets per client:", *pktsPtr) 
 	fmt.Println("packet size:", *sizePtr) 
 	fmt.Println("server address:", flag.Args()[0])
