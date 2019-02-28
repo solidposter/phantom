@@ -71,8 +71,8 @@ func main() {
 	wg.Wait()
 
 	t := time.Now()
-	fmt.Println("Total runtime:", t.Sub(tstart))
 	close(ch)
+	fmt.Println("Runtime:", t.Sub(tstart), "Packets received:", totPkts, "Packets dropped:", totDrops)
 }
 
 func udpbouncer(port string) {
