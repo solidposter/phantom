@@ -46,6 +46,11 @@ func main() {
 		}
 	}
 
+	if len(flag.Args()) == 0 {
+		fmt.Println("Specify server")
+		return
+	}
+
 	fmt.Println("number of clients:", *clntPtr)
 	fmt.Println("packets per client:", *pktsPtr) 
 	fmt.Println("packet size:", *sizePtr) 
