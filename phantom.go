@@ -50,7 +50,6 @@ func main() {
 		fmt.Println("Specify server")
 		return
 	}
-
 	fmt.Println("number of clients:", *clntPtr)
 	fmt.Println("packets per client:", *pktsPtr) 
 	fmt.Println("packet size:", *sizePtr) 
@@ -71,7 +70,6 @@ func main() {
 	t := time.Now()
 	fmt.Println("Total runtime:", t.Sub(tstart))
 	close(ch)
-	
 }
 
 func udpbouncer(port string) {
