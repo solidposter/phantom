@@ -31,7 +31,7 @@ import (
 
 var wg sync.WaitGroup
 var totPkts,totDrops uint64
-var tstart,tend  time.Time
+var tstart,tend time.Time
 
 func main() {
 	modePtr := flag.Bool("s", false, "set server mode")
