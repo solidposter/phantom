@@ -22,13 +22,16 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	"os/signal"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 )
 
 var wg sync.WaitGroup
-var totPkts, totDrops uint64
+var totPkts,totDrops uint64
+var tstart,tend  time.Time
 
 func main() {
 	modePtr := flag.Bool("s", false, "set server mode")
@@ -37,6 +40,7 @@ func main() {
 	sizePtr := flag.Int("b", 512, "packet size")
 	flag.Parse()
 
+	// start in server mode
 	if *modePtr {
 		fmt.Print("Starting server mode, ")
 		if len(flag.Args()) == 0 {
@@ -46,6 +50,7 @@ func main() {
 		}
 	}
 
+	// client mode
 	if len(flag.Args()) == 0 {
 		fmt.Println("Specify server:port")
 		return
@@ -60,19 +65,25 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	wg.Add(int(*clntPtr))
 
+	// catch CTRL+C
+	go trapper()
+	// start the statistics printer
 	ch := make(chan int)
 	go statsprinter(ch,*clntPtr)	// not counted by wg, channel ch used to close
-
-	tstart := time.Now()
+	// start the clients
+	tstart = time.Now()
 	for i := 0; i < *clntPtr; i++ {
 		go udpclient(flag.Args()[0],*pktsPtr, *sizePtr)
 		time.Sleep(10 * time.Millisecond) // insert sleep to handle startup of many go routines
 	}
 	wg.Wait()
-
-	t := time.Now()
 	close(ch)
-	fmt.Println("Runtime:", t.Sub(tstart), "Packets received:", totPkts, "Packets dropped:", totDrops)
+	finalreport()
+}
+
+func finalreport() {
+	tend = time.Now()
+	fmt.Println("Runtime:", tend.Sub(tstart), "Packets received:", totPkts, "Packets dropped:", totDrops)
 }
 
 func udpbouncer(port string) {
@@ -140,5 +151,14 @@ func statsprinter(ch chan int, nclients int) {
 		}
 		c1 = c2
 	}
+}
+
+func trapper() {
+	cs := make(chan os.Signal)
+	signal.Notify(cs, os.Interrupt, syscall.SIGTERM)
+	<- cs
+	fmt.Println()
+	finalreport()
+	os.Exit(1)
 }
 
