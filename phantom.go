@@ -54,15 +54,15 @@ func main() {
 	if *pktsPtr < 1 {
 		*pktsPtr = int(^uint(0) >> 1)
 	}
-	fmt.Println("packets per client:", *pktsPtr) 
-	fmt.Println("packet size:", *sizePtr) 
+	fmt.Println("packets per client:", *pktsPtr)
+	fmt.Println("packet size:", *sizePtr)
 	fmt.Println("server address:", flag.Args()[0])
 	rand.Seed(time.Now().UnixNano())
 	wg.Add(int(*clntPtr))
 
 	ch := make(chan int)
 	go statsprinter(ch,*clntPtr)	// not counted by wg, channel ch used to close
-	
+
 	tstart := time.Now()
 	for i := 0; i < *clntPtr; i++ {
 		go udpclient(flag.Args()[0],*pktsPtr, *sizePtr)
