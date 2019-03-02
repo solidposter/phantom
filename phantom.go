@@ -116,7 +116,6 @@ func udpbouncer(port string, key int) {
 			fmt.Println(err)
 			os.Exit(2)
 		}
-
 		atomic.AddUint64(&totPkts, 1)
 		if int64(binary.LittleEndian.Uint64(buffer[0:8])) == serverkey {
 			pc.WriteTo(buffer[0:len], addr)
