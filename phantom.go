@@ -136,7 +136,7 @@ func udpbouncer(port string, key int) {
 	}
 	fmt.Println("listening on",pc.LocalAddr(),"with server key",serverkey)
 
-	buffer := make([]byte, 4096)
+	buffer := make([]byte, 65536)
 	for {
 		len,addr,err := pc.ReadFrom(buffer)
 		if err != nil {
