@@ -74,12 +74,13 @@ func main() {
 	fmt.Println("packets per client:", *pktsPtr)
 	fmt.Println("packet size:", *sizePtr)
 	fmt.Println("server address:", flag.Args()[0])
-	wg.Add(int(*clntPtr))
 
 	// start the statistics printer
 	ch := make(chan int)
-	go statsprinter(ch,*clntPtr)	// not counted by wg, channel ch used to close
+	go statsprinter(ch,*clntPtr)
+
 	// start the clients
+	wg.Add(int(*clntPtr))
 	for i := 0; i < *clntPtr; i++ {
 		go udpclient(flag.Args()[0],*pktsPtr, *sizePtr, *keyPtr)
 		time.Sleep(10 * time.Millisecond) // insert sleep to handle startup of many go routines
