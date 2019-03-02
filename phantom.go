@@ -17,6 +17,7 @@ package main
 //
 
 import (
+	"encoding/binary"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -35,6 +36,7 @@ var tstart,tend time.Time
 
 func main() {
 	modePtr := flag.Bool("s", false, "set server mode")
+	keyPtr := flag.Int("k", 0, "server key")
 	clntPtr := flag.Int("n", 1, "number of clients to run")
 	pktsPtr := flag.Int("c", 1000, "number of packets to send per client")
 	sizePtr := flag.Int("b", 512, "packet size")
@@ -43,9 +45,9 @@ func main() {
 	// start in server mode, flag.Args()[0] is port to listen on.
 	if *modePtr {
 		if len(flag.Args()) == 0 {
-			udpbouncer("0")
+			udpbouncer("0",*keyPtr)
 		} else {
-			udpbouncer(flag.Args()[0])
+			udpbouncer(flag.Args()[0],*keyPtr)
 		}
 	}
 
@@ -54,6 +56,11 @@ func main() {
 		fmt.Println("Specify server:port")
 		return
 	}
+	if *keyPtr == 0 {
+		fmt.Println("Specify server key")
+		return
+	}
+
 	fmt.Println("number of clients:", *clntPtr)
 	if *pktsPtr < 1 {
 		*pktsPtr = int(^uint(0) >> 1)
@@ -72,7 +79,7 @@ func main() {
 	// start the clients
 	tstart = time.Now()
 	for i := 0; i < *clntPtr; i++ {
-		go udpclient(flag.Args()[0],*pktsPtr, *sizePtr)
+		go udpclient(flag.Args()[0],*pktsPtr, *sizePtr, *keyPtr)
 		time.Sleep(10 * time.Millisecond) // insert sleep to handle startup of many go routines
 	}
 	wg.Wait()
@@ -85,14 +92,19 @@ func finalreport() {
 	fmt.Println("Runtime:", tend.Sub(tstart), "Packets received:", totPkts, "Packets dropped:", totDrops)
 }
 
-func udpbouncer(port string) {
+func udpbouncer(port string, key int) {
+	serverkey := int64(key)
+	if serverkey == 0 {
+		serverkey = rand.Int63()
+	}
+
 	fmt.Print("Starting server mode, ")
 	pc, err := net.ListenPacket("udp","0.0.0.0:"+port)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	fmt.Println("listening on",pc.LocalAddr())
+	fmt.Println("listening on",pc.LocalAddr(),"with server key",serverkey)
 
 	buffer := make([]byte, 4096)
 	for {
@@ -101,15 +113,22 @@ func udpbouncer(port string) {
 			fmt.Println(err)
 			os.Exit(2)
 		}
-		pc.WriteTo(buffer[0:len], addr)
+
+		if int64(binary.LittleEndian.Uint64(buffer[0:8])) == serverkey {
+			pc.WriteTo(buffer[0:len], addr)
+		}
 	}
 }
 
-func udpclient(addr string, numpkts int, pktsize int) {
+func udpclient(addr string, numpkts int, pktsize int, key int) {
 	defer wg.Done()
 
+	// allocate a buffer of random data according to requested packet size
+	// stick the server key into the first 8 bytes
 	buffer := make([]byte, pktsize-28)	// subtract 20+8, IP+UDP header
 	rand.Read(buffer)	// put random data into the buffer
+	binary.LittleEndian.PutUint64(buffer[0:8], uint64(key))
+
 	conn, err := net.Dial("udp",addr)
 	if err != nil {
 		fmt.Println(err)
