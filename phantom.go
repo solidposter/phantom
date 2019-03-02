@@ -35,12 +35,18 @@ var totPkts,totDrops uint64
 var tstart,tend time.Time
 
 func main() {
+	tstart = time.Now()
+	rand.Seed(time.Now().UnixNano())
+
 	modePtr := flag.Bool("s", false, "set server mode")
 	keyPtr := flag.Int("k", 0, "server key")
 	clntPtr := flag.Int("n", 1, "number of clients to run")
 	pktsPtr := flag.Int("c", 1000, "number of packets to send per client")
 	sizePtr := flag.Int("b", 512, "packet size")
 	flag.Parse()
+
+	// catch CTRL+C
+	go trapper()
 
 	// start in server mode, flag.Args()[0] is port to listen on.
 	if *modePtr {
@@ -68,16 +74,12 @@ func main() {
 	fmt.Println("packets per client:", *pktsPtr)
 	fmt.Println("packet size:", *sizePtr)
 	fmt.Println("server address:", flag.Args()[0])
-	rand.Seed(time.Now().UnixNano())
 	wg.Add(int(*clntPtr))
 
-	// catch CTRL+C
-	go trapper()
 	// start the statistics printer
 	ch := make(chan int)
 	go statsprinter(ch,*clntPtr)	// not counted by wg, channel ch used to close
 	// start the clients
-	tstart = time.Now()
 	for i := 0; i < *clntPtr; i++ {
 		go udpclient(flag.Args()[0],*pktsPtr, *sizePtr, *keyPtr)
 		time.Sleep(10 * time.Millisecond) // insert sleep to handle startup of many go routines
@@ -116,6 +118,9 @@ func udpbouncer(port string, key int) {
 
 		if int64(binary.LittleEndian.Uint64(buffer[0:8])) == serverkey {
 			pc.WriteTo(buffer[0:len], addr)
+			atomic.AddUint64(&totPkts, 1)
+		} else {
+			atomic.AddUint64(&totDrops, 1)
 		}
 	}
 }
