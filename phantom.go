@@ -40,11 +40,10 @@ func main() {
 	sizePtr := flag.Int("b", 512, "packet size")
 	flag.Parse()
 
-	// start in server mode
+	// start in server mode, flag.Args()[0] is port to listen on.
 	if *modePtr {
-		fmt.Print("Starting server mode, ")
 		if len(flag.Args()) == 0 {
-			udpbouncer("2222")
+			udpbouncer("0")
 		} else {
 			udpbouncer(flag.Args()[0])
 		}
@@ -87,12 +86,13 @@ func finalreport() {
 }
 
 func udpbouncer(port string) {
-	fmt.Println("listening on port", port)
+	fmt.Print("Starting server mode, ")
 	pc, err := net.ListenPacket("udp","0.0.0.0:"+port)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	fmt.Println("listening on",pc.LocalAddr())
 
 	buffer := make([]byte, 4096)
 	for {
