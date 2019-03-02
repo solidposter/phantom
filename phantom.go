@@ -95,6 +95,33 @@ func finalreport() {
 	fmt.Println("Runtime:", tend.Sub(tstart), "Packets received:", totPkts, "Packets dropped:", totDrops)
 }
 
+func statsprinter(ch chan int, nclients int) {
+	var c1,c2 uint64
+
+	c1 = atomic.LoadUint64(&totPkts)
+	for {
+		select {
+			case <-ch:
+				return
+			case <-time.After(1 * time.Second):
+				c2 = atomic.LoadUint64(&totPkts)
+				fmt.Print("pps: ",c2-c1," total drops: ",atomic.LoadUint64(&totDrops))
+				fmt.Printf(" avg rtt: %.3f",1/float64(c2-c1)*1000*float64(nclients))
+				fmt.Println("ms")
+		}
+		c1 = c2
+	}
+}
+
+func trapper() {
+	cs := make(chan os.Signal)
+	signal.Notify(cs, os.Interrupt, syscall.SIGTERM)
+	<- cs
+	fmt.Println()
+	finalreport()
+	os.Exit(1)
+}
+
 func udpbouncer(port string, key int) {
 	serverkey := int64(key)
 	if serverkey == 0 {
@@ -157,32 +184,5 @@ func udpclient(addr string, numpkts int, pktsize int, key int) {
 			atomic.AddUint64(&totPkts, 1)
 		}
 	}
-}
-
-func statsprinter(ch chan int, nclients int) {
-	var c1,c2 uint64
-
-	c1 = atomic.LoadUint64(&totPkts)
-	for {
-		select {
-			case <-ch:
-				return
-			case <-time.After(1 * time.Second):
-				c2 = atomic.LoadUint64(&totPkts)
-				fmt.Print("pps: ",c2-c1," total drops: ",atomic.LoadUint64(&totDrops))
-				fmt.Printf(" avg rtt: %.3f",1/float64(c2-c1)*1000*float64(nclients))
-				fmt.Println("ms")
-		}
-		c1 = c2
-	}
-}
-
-func trapper() {
-	cs := make(chan os.Signal)
-	signal.Notify(cs, os.Interrupt, syscall.SIGTERM)
-	<- cs
-	fmt.Println()
-	finalreport()
-	os.Exit(1)
 }
 
