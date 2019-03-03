@@ -81,7 +81,7 @@ func main() {
 	if len(flag.Args()) == 1 {
 		fmt.Println("server address:", flag.Args()[0])
 	} else {
-		fmt.Println("Invalid otions. Server IP:port should be the final option.", flag.Args()[1:])
+		fmt.Println("Invalid options. Server IP:port should be the final option.", flag.Args()[1:])
 		return
 	}
 
