@@ -115,7 +115,7 @@ func main() {
 		if atomic.LoadUint64(&nclients) == 0 {
 			break
 		}
-		time.Sleep(1000 * time.Millisecond) // insert sleep to handle s
+		time.Sleep(1000 * time.Millisecond)
 	}
 	finalreport()
 }
