@@ -52,8 +52,11 @@ func main() {
 	if *modePtr {
 		if len(flag.Args()) == 0 {
 			udpbouncer("0",*keyPtr)
-		} else {
+		} else if len(flag.Args()) == 1 {
 			udpbouncer(flag.Args()[0],*keyPtr)
+		} else {
+			fmt.Println("Invalid options. Server port should be the final option.", flag.Args()[1:])
+			return
 		}
 	}
 
@@ -75,7 +78,12 @@ func main() {
 	}
 	fmt.Println("packet size:", *sizePtr)
 	fmt.Println("number of clients:", *clntPtr)
-	fmt.Println("server address:", flag.Args()[0])
+	if len(flag.Args()) == 1 {
+		fmt.Println("server address:", flag.Args()[0])
+	} else {
+		fmt.Println("Invalid otions. Server IP:port should be the final option.", flag.Args()[1:])
+		return
+	}
 
 	// start the statistics printer
 	ch := make(chan int)
