@@ -102,8 +102,7 @@ func main() {
 	}
 
 	// start the statistics printer
-	ch := make(chan int)
-	go statsprinter(ch,*clntPtr)
+	go statsprinter(*clntPtr)
 
 	// start the clients
 	wg.Add(int(*clntPtr))
@@ -112,7 +111,6 @@ func main() {
 		time.Sleep(time.Duration(*rampPtr) * time.Millisecond)	// default 10 ms sleep between go routines, unless in ramp-up mode
 	}
 	wg.Wait()
-	close(ch)
 	finalreport()
 }
 
@@ -133,20 +131,16 @@ func finalreport() {
 	fmt.Println("Runtime:", tend.Sub(tstart), "Packets received:", totPkts, "Packets dropped:", totDrops)
 }
 
-func statsprinter(ch chan int, nclients int) {
+func statsprinter(nclients int) {
 	var c1,c2 uint64
 
 	c1 = atomic.LoadUint64(&totPkts)
 	for {
-		select {
-			case <-ch:
-				return
-			case <-time.After(1 * time.Second):
-				c2 = atomic.LoadUint64(&totPkts)
-				fmt.Print("pps: ",c2-c1," total drops: ",atomic.LoadUint64(&totDrops))
-				fmt.Printf(" avg rtt: %.3f",1/float64(c2-c1)*1000*float64(nclients))
-				fmt.Println("ms")
-		}
+		time.Sleep(1000 * time.Millisecond)
+		c2 = atomic.LoadUint64(&totPkts)
+		fmt.Print("pps: ",c2-c1," total drops: ",atomic.LoadUint64(&totDrops))
+		fmt.Printf(" avg rtt: %.3f",1/float64(c2-c1)*1000*float64(nclients))
+		fmt.Println("ms")
 		c1 = c2
 	}
 }
