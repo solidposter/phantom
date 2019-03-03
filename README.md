@@ -18,9 +18,17 @@ client flags:
  -c <number> packets per thread (default 1k)
  -b <number> packet size (default 512 bytes)
  -k <number> server key
+ -r <number> ramp-up mode (see below)
 
 phantom -k 1969 192.0.2.1:2929 (key 1969 server 192.0.2.1:2929)
 phantom -k 1969 -n 10 -c 1000000 -b 288 192.0.2.1:2929 (10 threads, 100k packets per thread, 288 byte packets)
 
 Set -c 0 to get a client that runs for a very long time, or til interrupted.
+
+Client in ramp-up mode:
+
+In ramp-up mode the client will add a thread every <number> seconds until packet loss is detected.
+The option -r overrides the -n and -c options.
+
+phantom -k 1969 -r 5 192.0.2.1:2929 (key 1969, ramp-up 5s, server 192.0.2.1:2929)
 

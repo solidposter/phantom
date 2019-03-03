@@ -80,13 +80,13 @@ func main() {
 	// when dropexit() detects packet loss it will print the final report and exit
 	if *rampPtr > 1 {
 		go dropexit()
-		*clntPtr = 10000		// change number of clients to 10k
-		*pktsPtr = int(^uint(0) >> 1)	// change packets per client to a lot
+		*clntPtr = 10000		// override number of clients to 10k
+		*pktsPtr = int(^uint(0) >> 1)	// override packets per client to a lot
 		fmt.Println("ramp-up interval:", *rampPtr, "seconds")
 		*rampPtr = *rampPtr * 1000	// change to ms
 
 	} else {
-		*rampPtr = 10	// default delay between clients is 10 ms
+		*rampPtr = 10	// normal mode, default delay between clients is 10 ms
 	}
 
 	if *pktsPtr < 1 {
