@@ -43,6 +43,7 @@ func main() {
 	clntPtr := flag.Int("n", 1, "number of clients to run")
 	pktsPtr := flag.Int("c", 1000, "number of packets to send per client")
 	sizePtr := flag.Int("b", 512, "packet size")
+	rampPtr := flag.Int("r", 0, "Ramp-up interval in seconds")
 	flag.Parse()
 
 	// catch CTRL+C
@@ -69,14 +70,29 @@ func main() {
 		fmt.Println("Specify server key")
 		return
 	}
-	if *pktsPtr < 1 {
-		*pktsPtr = int(^uint(0) >> 1)
-	}
-	fmt.Println("packets per client:", *pktsPtr)
 	if *sizePtr < 36 {	// IP+UDP+int64 (the int64 key is in the first 8 bytes of data)
 		*sizePtr = 36
 	}
 	fmt.Println("packet size:", *sizePtr)
+
+	// client in ramp-up mode, increase speed until something fails
+	// add a new client every *rampPtr seconds
+	// when dropexit() detects packet loss it will print the final report and exit
+	if *rampPtr > 1 {
+		go dropexit()
+		*clntPtr = 10000		// change number of clients to 10k
+		*pktsPtr = int(^uint(0) >> 1)	// change packets per client to a lot
+		fmt.Println("ramp-up interval:", *rampPtr, "seconds")
+		*rampPtr = *rampPtr * 1000	// change to ms
+
+	} else {
+		*rampPtr = 10	// default delay between clients is 10 ms
+	}
+
+	if *pktsPtr < 1 {
+		*pktsPtr = int(^uint(0) >> 1)
+	}
+	fmt.Println("packets per client:", *pktsPtr)
 	fmt.Println("number of clients:", *clntPtr)
 	if len(flag.Args()) == 1 {
 		fmt.Println("server address:", flag.Args()[0])
@@ -93,11 +109,23 @@ func main() {
 	wg.Add(int(*clntPtr))
 	for i := 0; i < *clntPtr; i++ {
 		go udpclient(flag.Args()[0],*pktsPtr, *sizePtr, *keyPtr)
-		time.Sleep(10 * time.Millisecond) // insert sleep to handle startup of many go routines
+		time.Sleep(time.Duration(*rampPtr) * time.Millisecond)	// default 10 ms sleep between go routines, unless in ramp-up mode
 	}
 	wg.Wait()
 	close(ch)
 	finalreport()
+}
+
+func dropexit () {
+	for {
+		if totDrops != 0 {
+			fmt.Println()
+			finalreport()
+			os.Exit(0)
+		 } else {
+			time.Sleep(1000 * time.Millisecond) // insert sleep to handle s
+		}
+	}
 }
 
 func finalreport() {
