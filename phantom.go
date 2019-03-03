@@ -66,13 +66,15 @@ func main() {
 		fmt.Println("Specify server key")
 		return
 	}
-
-	fmt.Println("number of clients:", *clntPtr)
 	if *pktsPtr < 1 {
 		*pktsPtr = int(^uint(0) >> 1)
 	}
 	fmt.Println("packets per client:", *pktsPtr)
+	if *sizePtr < 36 {	// IP+UDP+int64 (the int64 key is in the first 8 bytes of data)
+		*sizePtr = 36
+	}
 	fmt.Println("packet size:", *sizePtr)
+	fmt.Println("number of clients:", *clntPtr)
 	fmt.Println("server address:", flag.Args()[0])
 
 	// start the statistics printer
