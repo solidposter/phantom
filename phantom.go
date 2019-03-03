@@ -24,13 +24,12 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
 )
 
-var wg sync.WaitGroup
+var nclients uint64
 var totPkts,totDrops uint64
 var tstart,tend time.Time
 
@@ -102,15 +101,22 @@ func main() {
 	}
 
 	// start the statistics printer
-	go statsprinter(*clntPtr)
+	go statsprinter()
 
 	// start the clients
-	wg.Add(int(*clntPtr))
 	for i := 0; i < *clntPtr; i++ {
 		go udpclient(flag.Args()[0],*pktsPtr, *sizePtr, *keyPtr)
+		atomic.AddUint64(&nclients, 1)	// bump the threads counter
 		time.Sleep(time.Duration(*rampPtr) * time.Millisecond)	// default 10 ms sleep between go routines, unless in ramp-up mode
 	}
-	wg.Wait()
+
+	// wait for all clients to exit
+	for {
+		if atomic.LoadUint64(&nclients) == 0 {
+			break
+		}
+		time.Sleep(1000 * time.Millisecond) // insert sleep to handle s
+	}
 	finalreport()
 }
 
@@ -131,7 +137,7 @@ func finalreport() {
 	fmt.Println("Runtime:", tend.Sub(tstart), "Packets received:", totPkts, "Packets dropped:", totDrops)
 }
 
-func statsprinter(nclients int) {
+func statsprinter() {
 	var c1,c2 uint64
 
 	c1 = atomic.LoadUint64(&totPkts)
@@ -139,7 +145,7 @@ func statsprinter(nclients int) {
 		time.Sleep(1000 * time.Millisecond)
 		c2 = atomic.LoadUint64(&totPkts)
 		fmt.Print("pps: ",c2-c1," total drops: ",atomic.LoadUint64(&totDrops))
-		fmt.Printf(" avg rtt: %.3f",1/float64(c2-c1)*1000*float64(nclients))
+		fmt.Printf(" avg rtt: %.3f",1/float64(c2-c1)*1000*float64(atomic.LoadUint64(&nclients)))
 		fmt.Println("ms")
 		c1 = c2
 	}
@@ -185,7 +191,8 @@ func udpbouncer(port string, key int) {
 }
 
 func udpclient(addr string, numpkts int, pktsize int, key int) {
-	defer wg.Done()
+	// decrement the client counter on exit
+	defer atomic.AddUint64(&nclients, ^uint64(0))
 
 	// allocate a buffer of random data according to requested packet size
 	// stick the server key into the first 8 bytes
