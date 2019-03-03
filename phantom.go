@@ -119,7 +119,7 @@ func trapper() {
 	<- cs
 	fmt.Println()
 	finalreport()
-	os.Exit(1)
+	os.Exit(0)
 }
 
 func udpbouncer(port string, key int) {
