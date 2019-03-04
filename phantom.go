@@ -79,7 +79,7 @@ func main() {
 	// when dropexit() detects packet loss it will print the final report and exit
 	if *rampPtr > 0 {
 		go dropexit()
-		*clntPtr = 10000		// override number of clients to 10k
+		*clntPtr = int(^uint(0) >> 1)	// override number of clients to a lot
 		*pktsPtr = int(^uint(0) >> 1)	// override packets per client to a lot
 		fmt.Println("ramp-up interval:", *rampPtr, "seconds")
 		*rampPtr = *rampPtr * 1000	// change to ms
