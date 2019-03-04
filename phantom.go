@@ -63,11 +63,11 @@ func main() {
 	// client mode
 	if len(flag.Args()) == 0 {
 		fmt.Println("Specify server:port")
-		return
+		os.Exit(1)
 	}
 	if *keyPtr == 0 {
 		fmt.Println("Specify server key")
-		return
+		os.Exit(1)
 	}
 	if *sizePtr < 36 {	// IP+UDP+int64 (the int64 key is in the first 8 bytes of data)
 		*sizePtr = 36
@@ -97,7 +97,7 @@ func main() {
 		fmt.Println("server address:", flag.Args()[0])
 	} else {
 		fmt.Println("Invalid options. Server IP:port should be the final option.", flag.Args()[1:])
-		return
+		os.Exit(1)
 	}
 
 	// start the statistics printer
@@ -171,7 +171,7 @@ func udpbouncer(port string, key int) {
 	pc, err := net.ListenPacket("udp","0.0.0.0:"+port)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		os.Exit(2)
 	}
 	fmt.Println("listening on",pc.LocalAddr(),"with server key",serverkey)
 
@@ -180,7 +180,7 @@ func udpbouncer(port string, key int) {
 		len,addr,err := pc.ReadFrom(buffer)
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(2)
+			os.Exit(3)
 		}
 		if int64(binary.LittleEndian.Uint64(buffer[0:8])) == serverkey {
 			pc.WriteTo(buffer[0:len], addr)
@@ -204,7 +204,7 @@ func udpclient(addr string, numpkts int, pktsize int, key int) {
 	conn, err := net.Dial("udp",addr)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		os.Exit(2)
 	}
 
 	for i := 0; i < numpkts; i++ {
