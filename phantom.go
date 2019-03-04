@@ -122,7 +122,7 @@ func main() {
 
 func dropexit () {
 	for {
-		if totDrops != 0 {
+		if atomic.LoadUint64(&totDrops) != 0 {
 			fmt.Println()
 			finalreport()
 			os.Exit(0)
