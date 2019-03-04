@@ -140,7 +140,7 @@ func finalreport() {
 func statsprinter() {
 	var c1,c2 uint64
 
-	time.Sleep(100 * time.Millisecond)	// estetics, don't race with the client startups
+	time.Sleep(100 * time.Millisecond)	// estetics, don't race with the ramp-up clients
 	c1 = atomic.LoadUint64(&totPkts)
 	for {
 		time.Sleep(1000 * time.Millisecond)
