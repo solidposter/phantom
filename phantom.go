@@ -77,7 +77,7 @@ func main() {
 	// client in ramp-up mode, increase speed until something fails
 	// add a new client every *rampPtr seconds
 	// when dropexit() detects packet loss it will print the final report and exit
-	if *rampPtr > 1 {
+	if *rampPtr > 0 {
 		go dropexit()
 		*clntPtr = 10000		// override number of clients to 10k
 		*pktsPtr = int(^uint(0) >> 1)	// override packets per client to a lot
