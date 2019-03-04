@@ -140,13 +140,14 @@ func finalreport() {
 func statsprinter() {
 	var c1,c2 uint64
 
+	time.Sleep(100 * time.Millisecond)	// estetics, don't race with the client startups
 	c1 = atomic.LoadUint64(&totPkts)
 	for {
 		time.Sleep(1000 * time.Millisecond)
 		c2 = atomic.LoadUint64(&totPkts)
 		fmt.Print("pps: ",c2-c1," total drops: ",atomic.LoadUint64(&totDrops))
-		fmt.Printf(" avg rtt: %.3f",1/float64(c2-c1)*1000*float64(atomic.LoadUint64(&nclients)))
-		fmt.Println("ms")
+		fmt.Printf(" avg rtt: %.3f ms",1/float64(c2-c1)*1000*float64(atomic.LoadUint64(&nclients)))
+		fmt.Println(" clients:", atomic.LoadUint64(&nclients))
 		c1 = c2
 	}
 }
