@@ -127,7 +127,7 @@ func dropexit () {
 			finalreport()
 			os.Exit(0)
 		 } else {
-			time.Sleep(1000 * time.Millisecond) // insert sleep to handle s
+			time.Sleep(1000 * time.Millisecond)
 		}
 	}
 }
