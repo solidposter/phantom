@@ -134,7 +134,7 @@ func dropexit () {
 
 func finalreport() {
 	tend = time.Now()
-	fmt.Println("Runtime:", tend.Sub(tstart), "Packets received:", totPkts, "Packets dropped:", totDrops)
+	fmt.Println("Runtime:", tend.Sub(tstart), "Packets sent:", totPkts, "Packets dropped:", totDrops)
 }
 
 func statsprinter() {
@@ -182,9 +182,9 @@ func udpbouncer(port string, key int) {
 			fmt.Println(err)
 			os.Exit(2)
 		}
-		atomic.AddUint64(&totPkts, 1)
 		if int64(binary.LittleEndian.Uint64(buffer[0:8])) == serverkey {
 			pc.WriteTo(buffer[0:len], addr)
+			atomic.AddUint64(&totPkts, 1)
 		} else {
 			atomic.AddUint64(&totDrops, 1)
 		}
@@ -214,14 +214,13 @@ func udpclient(addr string, numpkts int, pktsize int, key int) {
 			time.Sleep(10 * time.Millisecond) // chill a little
 			continue
 		}
+		atomic.AddUint64(&totPkts, 1)
 
 		conn.SetReadDeadline(time.Now().Add(1000*time.Millisecond))
 		_, err = conn.Read(buffer)
 		if err != nil {
 			fmt.Println("read failed:",err)
 			atomic.AddUint64(&totDrops, 1)
-		} else {
-			atomic.AddUint64(&totPkts, 1)
 		}
 	}
 }
