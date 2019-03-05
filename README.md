@@ -27,7 +27,7 @@ Set -c 0 to get a client that runs for a very long time, or til interrupted.
 
 Client in ramp-up mode:
 
-In ramp-up mode the client will add a thread every <number> seconds until packet loss is detected.
+In ramp-up mode the client will add a thread at the interval specified until packet loss is detected.
 The option -r overrides the -n and -c options.
 
 phantom -k 1969 -r 5 192.0.2.1:2929 (key 1969, ramp-up 5s, server 192.0.2.1:2929)
