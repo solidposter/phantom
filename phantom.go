@@ -31,7 +31,7 @@ import (
 
 var nclients uint64
 var totPkts,totDrops uint64
-var tstart,tend time.Time
+var tstart time.Time
 
 func main() {
 	tstart = time.Now()
@@ -132,8 +132,7 @@ func dropexit () {
 }
 
 func finalreport() {
-	tend = time.Now()
-	fmt.Println("Runtime:", tend.Sub(tstart), "Packets sent:", totPkts, "Packets dropped:", totDrops)
+	fmt.Println("Runtime:", time.Now().Sub(tstart), "Packets sent:", totPkts, "Packets dropped:", totDrops)
 }
 
 func statsprinter() {
