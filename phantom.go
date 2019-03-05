@@ -126,9 +126,8 @@ func dropexit () {
 			fmt.Println()
 			finalreport()
 			os.Exit(0)
-		 } else {
-			time.Sleep(1000 * time.Millisecond)
-		}
+		 }
+		time.Sleep(1000 * time.Millisecond)
 	}
 }
 
