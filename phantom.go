@@ -117,22 +117,22 @@ func main() {
 		}
 		time.Sleep(1000 * time.Millisecond)
 	}
-	finalreport()
+	reportexit()
 }
 
 func dropexit () {
 	for {
 		if atomic.LoadUint64(&totDrops) != 0 {
 			fmt.Println()
-			finalreport()
-			os.Exit(0)
+			reportexit()
 		 }
 		time.Sleep(1000 * time.Millisecond)
 	}
 }
 
-func finalreport() {
+func reportexit() {
 	fmt.Println("Runtime:", time.Now().Sub(tstart), "Packets sent:", totPkts, "Packets dropped:", totDrops)
+	os.Exit(0)
 }
 
 func statsprinter() {
@@ -155,8 +155,7 @@ func trapper() {
 	signal.Notify(cs, os.Interrupt, syscall.SIGTERM)
 	<- cs
 	fmt.Println()
-	finalreport()
-	os.Exit(0)
+	reportexit()
 }
 
 func udpbouncer(port string, key int) {
