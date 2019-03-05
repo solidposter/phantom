@@ -181,11 +181,16 @@ func udpbouncer(port string, key int) {
 			fmt.Println(err)
 			os.Exit(3)
 		}
-		if int64(binary.LittleEndian.Uint64(buffer[0:8])) == serverkey {
-			pc.WriteTo(buffer[0:len], addr)
-			atomic.AddUint64(&totPkts, 1)
-		} else {
+		if int64(binary.LittleEndian.Uint64(buffer[0:8])) != serverkey {
 			atomic.AddUint64(&totDrops, 1)
+			continue
+		}
+		_, err = pc.WriteTo(buffer[0:len], addr)
+		if err != nil {
+			fmt.Println(err)
+			atomic.AddUint64(&totDrops, 1)
+		} else {
+			atomic.AddUint64(&totPkts, 1)
 		}
 	}
 }
