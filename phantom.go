@@ -147,7 +147,8 @@ func statsprinter() {
 		avgrtt = time.Now().Sub(tstamp).Seconds() / float64(c2-c1) * float64(atomic.LoadUint64(&nclients)) * 1000
 		fmt.Print("pps: ",c2-c1," total drops: ",atomic.LoadUint64(&totDrops))
 		fmt.Printf(" avg rtt: %.3f ms", avgrtt)
-		fmt.Println(" clients:", atomic.LoadUint64(&nclients))
+		fmt.Print(" clients:", atomic.LoadUint64(&nclients))
+		fmt.Println(" runtime:", time.Now().Sub(tstart))
 		c1 = c2
 		tstamp = time.Now()
 		time.Sleep(1000 * time.Millisecond)
