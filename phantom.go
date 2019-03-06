@@ -137,16 +137,20 @@ func reportexit() {
 
 func statsprinter() {
 	var c1,c2 uint64
+	var avgrtt float64
 
-	time.Sleep(100 * time.Millisecond)	// estetics, don't race with the ramp-up clients
+	tstamp := time.Now()
 	c1 = atomic.LoadUint64(&totPkts)
+	time.Sleep(900 * time.Millisecond)	// estetics, don't race with the ramp-up clients
 	for {
-		time.Sleep(1000 * time.Millisecond)
 		c2 = atomic.LoadUint64(&totPkts)
+		avgrtt = time.Now().Sub(tstamp).Seconds() / float64(c2-c1) * float64(atomic.LoadUint64(&nclients)) * 1000
 		fmt.Print("pps: ",c2-c1," total drops: ",atomic.LoadUint64(&totDrops))
-		fmt.Printf(" avg rtt: %.3f ms",1/float64(c2-c1)*1000*float64(atomic.LoadUint64(&nclients)))
+		fmt.Printf(" avg rtt: %.3f ms", avgrtt)
 		fmt.Println(" clients:", atomic.LoadUint64(&nclients))
 		c1 = c2
+		tstamp = time.Now()
+		time.Sleep(1000 * time.Millisecond)
 	}
 }
 
