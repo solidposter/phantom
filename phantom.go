@@ -55,7 +55,7 @@ func main() {
 		} else if len(flag.Args()) == 1 {
 			udpbouncer(flag.Args()[0],*keyPtr)
 		} else {
-			fmt.Println("Invalid options. Server port should be the final option.", flag.Args()[1:])
+			fmt.Println("Error, only the server port should follow the options.", flag.Args())
 			return
 		}
 	}
@@ -96,7 +96,7 @@ func main() {
 	if len(flag.Args()) == 1 {
 		fmt.Println("server address:", flag.Args()[0])
 	} else {
-		fmt.Println("Invalid options. Server IP:port should be the final option.", flag.Args()[1:])
+		fmt.Println("Error, only server IP:port follow the options.", flag.Args())
 		os.Exit(1)
 	}
 
