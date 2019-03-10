@@ -105,7 +105,7 @@ func main() {
 	go statsprinter()
 
 	// start the clients
-	time.Sleep(100*time.Millisecond)	// avoid race with the statsprinter
+	time.Sleep(25*time.Millisecond)		// avoid race with the statsprinter
 	ticker := time.NewTicker( time.Duration(*rampPtr) * time.Millisecond)
 	for i := 0; i < *clntPtr; i++ {
 		go udpclient(flag.Args()[0],*pktsPtr, *sizePtr, *keyPtr)
