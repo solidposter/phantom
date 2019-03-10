@@ -57,7 +57,7 @@ func main() {
 			udpbouncer(flag.Args()[0],*keyPtr)
 		} else {
 			fmt.Println("Error, only the server port should follow the options.", flag.Args())
-			return
+			os.Exit(1)
 		}
 	}
 
