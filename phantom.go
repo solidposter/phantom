@@ -140,6 +140,7 @@ func statsprinter() {
 	var c1,c2 uint64
 	var avgrtt float64
 
+	ticker := time.NewTicker(1*time.Second)
 	tstamp := time.Now()
 	c1 = atomic.LoadUint64(&totPkts)
 	time.Sleep(900 * time.Millisecond)	// estetics, don't race with the ramp-up clients
@@ -152,7 +153,7 @@ func statsprinter() {
 		fmt.Println(" runtime:", time.Now().Sub(tstart))
 		c1 = c2
 		tstamp = time.Now()
-		time.Sleep(1000 * time.Millisecond)
+		 <-ticker.C
 	}
 }
 
