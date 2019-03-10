@@ -141,16 +141,14 @@ func reportexit() {
 
 func statsprinter() {
 	var c1,c2 uint64
-	var avgrtt float64
 
 	ticker := time.NewTicker(1*time.Second)
 	c1 = atomic.LoadUint64(&totPkts)
 	for {
 		 <-ticker.C
 		c2 = atomic.LoadUint64(&totPkts)
-		avgrtt = 1 / float64(c2-c1) * float64(atomic.LoadUint64(&nclients)) * 1000
 		fmt.Print("pps: ",c2-c1," total drops: ",atomic.LoadUint64(&totDrops))
-		fmt.Printf(" avg rtt: %.3f ms", avgrtt)
+		fmt.Printf(" avg rtt: %.3f ms", 1/float64(c2-c1)*float64(atomic.LoadUint64(&nclients))*1000)
 		fmt.Print(" clients: ", atomic.LoadUint64(&nclients))
 		fmt.Println(" runtime:", time.Now().Sub(tstart))
 		c1 = c2
