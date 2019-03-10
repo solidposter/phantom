@@ -105,11 +105,14 @@ func main() {
 	go statsprinter()
 
 	// start the clients
+	time.Sleep(100*time.Millisecond)	// avoid race with the statsprinter
+	ticker := time.NewTicker( time.Duration(*rampPtr) * time.Millisecond)
 	for i := 0; i < *clntPtr; i++ {
 		go udpclient(flag.Args()[0],*pktsPtr, *sizePtr, *keyPtr)
 		atomic.AddUint64(&nclients, 1)	// bump the threads counter
-		time.Sleep(time.Duration(*rampPtr) * time.Millisecond)	// default 10 ms sleep between go routines, unless in ramp-up mode
+		 <-ticker.C
 	}
+	ticker.Stop()
 
 	// wait for all clients to exit
 	for {
