@@ -202,11 +202,13 @@ func udpclient(addr string, numpkts int, pktsize int, key int) {
 	// decrement the client counter on exit
 	defer atomic.AddUint64(&nclients, ^uint64(0))
 
-	// allocate a buffer of random data according to requested packet size
+	// create payload of random data according to requested packet size
 	// stick the server key into the first 8 bytes
-	buffer := make([]byte, pktsize-28)	// subtract 20+8, IP+UDP header
-	rand.Read(buffer)	// put random data into the buffer
-	binary.LittleEndian.PutUint64(buffer[0:8], uint64(key))
+	payload := make([]byte, pktsize-28)	// subtract 20+8, IP+UDP header
+	rand.Read(payload)
+	binary.LittleEndian.PutUint64(payload[0:8], uint64(key))
+
+	buffer := make([]byte, 65536)
 
 	conn, err := net.Dial("udp",addr)
 	if err != nil {
@@ -215,7 +217,7 @@ func udpclient(addr string, numpkts int, pktsize int, key int) {
 	}
 
 	for i := 0; i < numpkts; i++ {
-		_, err = conn.Write(buffer)
+		_, err = conn.Write(payload)
 		if err != nil {
 			fmt.Println("write failed:",err)
 			time.Sleep(10 * time.Millisecond) // chill a little
