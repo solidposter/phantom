@@ -209,7 +209,6 @@ func udpclient(addr string, numpkts int, pktsize int, key int) {
 	binary.LittleEndian.PutUint64(payload[0:8], uint64(key))
 
 	buffer := make([]byte, 65536)
-
 	conn, err := net.Dial("udp",addr)
 	if err != nil {
 		fmt.Println(err)
