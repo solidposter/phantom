@@ -29,6 +29,11 @@ import (
 	"time"
 )
 
+var (	// Populate at build time.
+	version string
+	date	string
+)
+
 var nclients uint64
 var totPkts,totDrops uint64
 var tstart time.Time
@@ -43,8 +48,15 @@ func main() {
 	pktsPtr := flag.Int("c", 1000, "number of packets to send per client")
 	sizePtr := flag.Int("b", 512, "packet size")
 	rampPtr := flag.Int("r", 0, "Ramp-up interval in seconds")
+	versPtr := flag.Bool("v", false, "print version info")
 	flag.Usage = usage
 	flag.Parse()
+
+	if *versPtr {
+		fmt.Println("Version:", version)
+		fmt.Println("Date:", date)
+		os.Exit(0)
+	}
 
 	// catch CTRL+C
 	go trapper()
