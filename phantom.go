@@ -29,13 +29,13 @@ import (
 	"time"
 )
 
-var (	// Populate at build time.
+var ( // Populate at build time.
 	version string
-	date	string
+	date    string
 )
 
 var nclients uint64
-var totPkts,totDrops uint64
+var totPkts, totDrops uint64
 var tstart time.Time
 
 func main() {
@@ -64,9 +64,9 @@ func main() {
 	// start in server mode, flag.Args()[0] is port to listen on.
 	if *modePtr {
 		if len(flag.Args()) == 0 {
-			udpbouncer("0",*keyPtr)
+			udpbouncer("0", *keyPtr)
 		} else if len(flag.Args()) == 1 {
-			udpbouncer(flag.Args()[0],*keyPtr)
+			udpbouncer(flag.Args()[0], *keyPtr)
 		} else {
 			fmt.Println("Error, only the server port should follow the options.", flag.Args())
 			os.Exit(1)
@@ -82,7 +82,7 @@ func main() {
 		fmt.Println("Specify server key")
 		os.Exit(1)
 	}
-	if *sizePtr < 36 {	// IP+UDP+int64 (the int64 key is in the first 8 bytes of data)
+	if *sizePtr < 36 { // IP+UDP+int64 (the int64 key is in the first 8 bytes of data)
 		*sizePtr = 36
 	}
 	fmt.Println("packet size:", *sizePtr)
@@ -92,13 +92,13 @@ func main() {
 	// when dropexit() detects packet loss it will print the final report and exit
 	if *rampPtr > 0 {
 		go dropexit()
-		*clntPtr = int(^uint(0) >> 1)	// override number of clients to a lot
-		*pktsPtr = int(^uint(0) >> 1)	// override packets per client to a lot
+		*clntPtr = int(^uint(0) >> 1) // override number of clients to a lot
+		*pktsPtr = int(^uint(0) >> 1) // override packets per client to a lot
 		fmt.Println("ramp-up interval:", *rampPtr, "seconds")
-		*rampPtr = *rampPtr * 1000	// change to ms
+		*rampPtr = *rampPtr * 1000 // change to ms
 
 	} else {
-		*rampPtr = 20	// normal mode, default delay between clients is 20 ms
+		*rampPtr = 20 // normal mode, default delay between clients is 20 ms
 	}
 
 	if *pktsPtr < 1 {
@@ -117,12 +117,12 @@ func main() {
 	go statsprinter()
 
 	// start the clients
-	time.Sleep(40*time.Millisecond)		// avoid race with the statsprinter
-	ticker := time.NewTicker( time.Duration(*rampPtr) * time.Millisecond)
+	time.Sleep(40 * time.Millisecond) // avoid race with the statsprinter
+	ticker := time.NewTicker(time.Duration(*rampPtr) * time.Millisecond)
 	for i := 0; i < *clntPtr; i++ {
-		go udpclient(flag.Args()[0],*pktsPtr, *sizePtr, *keyPtr)
-		atomic.AddUint64(&nclients, 1)	// bump the threads counter
-		 <-ticker.C
+		go udpclient(flag.Args()[0], *pktsPtr, *sizePtr, *keyPtr)
+		atomic.AddUint64(&nclients, 1) // bump the threads counter
+		<-ticker.C
 	}
 	ticker.Stop()
 
@@ -136,12 +136,12 @@ func main() {
 	reportexit()
 }
 
-func dropexit () {
+func dropexit() {
 	for {
 		if atomic.LoadUint64(&totDrops) != 0 {
 			fmt.Println()
 			reportexit()
-		 }
+		}
 		time.Sleep(1000 * time.Millisecond)
 	}
 }
@@ -152,14 +152,14 @@ func reportexit() {
 }
 
 func statsprinter() {
-	var c1,c2 uint64
+	var c1, c2 uint64
 
-	ticker := time.NewTicker(1*time.Second)
+	ticker := time.NewTicker(1 * time.Second)
 	c1 = atomic.LoadUint64(&totPkts)
 	for {
-		 <-ticker.C
+		<-ticker.C
 		c2 = atomic.LoadUint64(&totPkts)
-		fmt.Print("pps: ",c2-c1," total drops: ",atomic.LoadUint64(&totDrops))
+		fmt.Print("pps: ", c2-c1, " total drops: ", atomic.LoadUint64(&totDrops))
 		fmt.Printf(" avg rtt: %.3f ms", 1/float64(c2-c1)*float64(atomic.LoadUint64(&nclients))*1000)
 		fmt.Print(" clients: ", atomic.LoadUint64(&nclients))
 		fmt.Println(" runtime:", time.Now().Sub(tstart))
@@ -170,7 +170,7 @@ func statsprinter() {
 func trapper() {
 	cs := make(chan os.Signal)
 	signal.Notify(cs, os.Interrupt, syscall.SIGTERM)
-	<- cs
+	<-cs
 	fmt.Println()
 	reportexit()
 }
@@ -182,16 +182,16 @@ func udpbouncer(port string, key int) {
 	}
 
 	fmt.Print("Starting server mode, ")
-	pc, err := net.ListenPacket("udp","0.0.0.0:"+port)
+	pc, err := net.ListenPacket("udp", "0.0.0.0:"+port)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(2)
 	}
-	fmt.Println("listening on",pc.LocalAddr(),"with server key",serverkey)
+	fmt.Println("listening on", pc.LocalAddr(), "with server key", serverkey)
 
 	buffer := make([]byte, 65536)
 	for {
-		len,addr,err := pc.ReadFrom(buffer)
+		len, addr, err := pc.ReadFrom(buffer)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(3)
@@ -216,12 +216,12 @@ func udpclient(addr string, numpkts int, pktsize int, key int) {
 
 	// create payload of random data according to requested packet size
 	// stick the server key into the first 8 bytes
-	payload := make([]byte, pktsize-28)	// subtract 20+8, IP+UDP header
+	payload := make([]byte, pktsize-28) // subtract 20+8, IP+UDP header
 	rand.Read(payload)
 	binary.LittleEndian.PutUint64(payload[0:8], uint64(key))
 
 	buffer := make([]byte, 65536)
-	conn, err := net.Dial("udp",addr)
+	conn, err := net.Dial("udp", addr)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(2)
@@ -230,16 +230,16 @@ func udpclient(addr string, numpkts int, pktsize int, key int) {
 	for i := 0; i < numpkts; i++ {
 		_, err = conn.Write(payload)
 		if err != nil {
-			fmt.Println("write failed:",err)
+			fmt.Println("write failed:", err)
 			time.Sleep(10 * time.Millisecond) // chill a little
 			continue
 		}
 		atomic.AddUint64(&totPkts, 1)
 
-		conn.SetReadDeadline(time.Now().Add(1000*time.Millisecond))
+		conn.SetReadDeadline(time.Now().Add(1000 * time.Millisecond))
 		_, err = conn.Read(buffer)
 		if err != nil {
-			fmt.Println("read failed:",err)
+			fmt.Println("read failed:", err)
 			atomic.AddUint64(&totDrops, 1)
 		}
 	}
@@ -281,4 +281,3 @@ phantom -k 1969 -r 5 192.0.2.1:2929 (key 1969, ramp-up 5s, server 192.0.2.1:2929
 `
 	fmt.Print(text)
 }
-
